@@ -1,12 +1,13 @@
-name: Build
+name: Build and Test
 on:
   push:
     branches:
       - master
-      
+  pull_request:
+    
 jobs:
   build:
-    name: Build and Test
+    name: Build
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -19,4 +20,19 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run all
-      
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Get the sources
+        uses: actions/checkout@v1
+      - name: Create a release draft for a version tag
+        id: create-release-draft
+        uses: ./
+      - name: Print the URL of the release draft
+        run: echo ${{ steps.create-release-draft.outputs.release-url }}
